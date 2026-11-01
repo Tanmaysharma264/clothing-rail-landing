@@ -3,9 +3,10 @@ import type { RailGarment } from "@/components/ui/product-rail-gallery";
 // PLACEHOLDER DATA: every piece uses the same shirt for now.
 // Replace names, prices and photos with your real products later.
 // Photos: transparent WebP cut-outs, same canvas and scale for front/back/side.
-// A side photo is optional; without one the front photo is shown turned away.
+// The side photo is shown while a piece rests on the rail.
 const FRONT = "/products/chillcom-tee-front.webp";
 const BACK = "/products/chillcom-tee-back.webp";
+const SIDE = "/products/chillcom-tee-side.webp";
 
 export const PLACEHOLDER_ITEMS: RailGarment[] = [
   {
@@ -18,6 +19,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-02",
@@ -29,6 +31,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-03",
@@ -40,6 +43,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-04",
@@ -51,6 +55,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-05",
@@ -62,6 +67,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-06",
@@ -73,6 +79,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-07",
@@ -84,6 +91,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-08",
@@ -95,6 +103,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-09",
@@ -106,6 +115,7 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
   {
     id: "chillcom-tee-10",
@@ -117,5 +127,6 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     details: ["Oversized fit", "Dropped shoulder", "Front print"],
     image: FRONT,
     backImage: BACK,
+    sideImage: SIDE,
   },
 ];
