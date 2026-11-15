@@ -1,25 +1,58 @@
+import Image from "next/image";
 import ClothingRailHero from "@/components/ui/product-rail-gallery";
+import { FlipCountdown } from "@/components/flip-countdown";
 import { PLACEHOLDER_ITEMS } from "@/data/placeholder-items";
+
+// Orders close at the end of 20 November 2026 (India time, IST).
+const DEADLINE = "2026-11-20T23:59:59+05:30";
 
 export default function Home() {
   return (
-    <main className="flex min-h-svh w-full items-center justify-center bg-background text-foreground">
-      <ClothingRailHero
-        items={PLACEHOLDER_ITEMS}
-        hanger="none"
-        eyebrow="New season · Ten pieces on the rail"
-        heading="A clothing rail you can handle, right on the page."
-        caption="Brush along the rail, slide a hanger, lift a piece to see the back."
-        autoplay
-        action={
-          <button
-            type="button"
-            className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background shadow-sm outline-none transition-[transform,box-shadow] hover:-translate-y-px hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
-          >
-            Shop the edit
-          </button>
-        }
+    <main className="relative isolate flex min-h-svh w-full flex-col items-center overflow-hidden bg-background text-foreground">
+      {/* soft pink blob behind everything */}
+      <Image
+        src="/brand/pink-blob.webp"
+        alt=""
+        width={900}
+        height={917}
+        priority
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-[8%] -z-10 h-[88%] w-auto max-w-none -translate-x-[48%] select-none opacity-45"
       />
+
+      <header className="relative grid w-full grid-cols-[1fr_auto_1fr] items-start gap-3 px-4 pt-4 sm:px-8 sm:pt-6">
+        <Image
+          src="/brand/chillcom-logo.webp"
+          alt="Chill Com"
+          width={900}
+          height={557}
+          priority
+          className="w-[clamp(64px,9vw,150px)] justify-self-start"
+        />
+        <h1 className="self-center pt-2 text-center font-[family-name:var(--font-syne)] text-[clamp(0.95rem,3.2vw,2.8rem)] font-extrabold uppercase tracking-[0.03em] sm:pt-4">
+          STORE_CHILLCOM
+        </h1>
+        <Image
+          src="/brand/chillest-logo.webp"
+          alt="Chillest in the Room, est. 2025"
+          width={900}
+          height={685}
+          priority
+          className="w-[clamp(56px,8vw,130px)] justify-self-end"
+        />
+      </header>
+
+      <FlipCountdown to={DEADLINE} label="COPE BEFORE" className="mt-2 sm:mt-0" />
+
+      <div className="mt-6 flex w-full flex-1 items-center sm:mt-8 sm:items-start">
+        <ClothingRailHero
+          items={PLACEHOLDER_ITEMS}
+          hanger="none"
+          showCaption={false}
+          autoplay
+          className="bg-transparent! [&>[data-backdrop]]:hidden"
+        />
+      </div>
     </main>
   );
 }

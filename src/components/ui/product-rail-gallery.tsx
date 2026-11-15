@@ -52,6 +52,8 @@ export interface ClothingRailHeroProps extends React.ComponentProps<"section"> {
   /** Drawn hanger. Use "none" when your photos already include a hanger with its hook at the top. */
   hanger?: "wood" | "matte" | "none";
   labels?: ClothingRailHeroLabels;
+  /** Set to false to hide the caption block under the rail. It stays available to screen readers. */
+  showCaption?: boolean;
   onOpenChange?: (index: number | null) => void;
 }
 
@@ -534,6 +536,7 @@ export function ClothingRailHero({
   interval = 2600,
   hanger = "wood",
   labels = DEFAULT_LABELS,
+  showCaption = true,
   onOpenChange,
   className,
   ...rest
@@ -930,7 +933,7 @@ export function ClothingRailHero({
       className={`relative isolate w-full overflow-hidden bg-background text-foreground ${className ?? ""}`}
     >
       <Defs uid={uid} />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(120% 70% at 18% 0%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 62%), linear-gradient(to bottom, transparent 55%, color-mix(in oklab, var(--color-foreground) 5%, transparent))" }} />
+      <div aria-hidden="true" data-backdrop className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(120% 70% at 18% 0%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 62%), linear-gradient(to bottom, transparent 55%, color-mix(in oklab, var(--color-foreground) 5%, transparent))" }} />
       {(eyebrow || heading) && (
         <header className="relative z-10 flex flex-col items-center gap-2 px-6 pt-8 text-center">
           {eyebrow && <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">{eyebrow}</p>}
@@ -1033,7 +1036,7 @@ export function ClothingRailHero({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center gap-4 px-6 pb-8 pt-4 text-center">
+      <div className={showCaption ? "relative z-10 flex flex-col items-center gap-4 px-6 pb-8 pt-4 text-center" : "sr-only"}>
         <div id={`${uid}-caption`} aria-live="polite" className="min-h-[3.25rem]">
           <p key={current?.id ?? "caption"} className="animate-in fade-in text-sm font-medium [animation-duration:300ms] motion-reduce:animate-none">{current ? current.name : caption}</p>
           {current?.description && <p key={`${current.id}-d`} className="mx-auto mt-1 max-w-[42ch] text-[13px] leading-relaxed text-muted-foreground">{current.description}</p>}

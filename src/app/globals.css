@@ -128,3 +128,17 @@
     @apply font-sans;
   }
 }
+/* Flip-clock digit animation (see src/components/flip-countdown.tsx) */
+@keyframes flip-top {
+  from { transform: rotateX(0deg); }
+  to { transform: rotateX(-90deg); }
+}
+@keyframes flip-bottom {
+  from { transform: rotateX(90deg); }
+  to { transform: rotateX(0deg); }
+}
+.flip-top { animation: flip-top 0.28s ease-in forwards; }
+.flip-bottom { animation: flip-bottom 0.28s ease-out 0.28s both; }
+@media (prefers-reduced-motion: reduce) {
+  .flip-top, .flip-bottom { display: none; }
+}
