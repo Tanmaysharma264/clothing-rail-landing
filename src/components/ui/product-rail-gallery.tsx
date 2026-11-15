@@ -26,6 +26,8 @@ export interface RailGarment {
   tag?: string;
   /** Short facts listed in the detail view. */
   details?: string[];
+  /** Override the detail-view face buttons for this piece, e.g. when `image` is really the back of the garment. */
+  labels?: Partial<Pick<ClothingRailHeroLabels, "front" | "back">>;
 }
 
 export interface ClothingRailHeroLabels {
@@ -1046,7 +1048,7 @@ export function ClothingRailHero({
           index={openIndex}
           total={count}
           hanger={hanger}
-          labels={labels}
+          labels={{ ...labels, ...items[openIndex].labels }}
           reduced={reduced}
           source={() => turns.current[openIndex]?.getBoundingClientRect() ?? null}
           onLift={(lift) => setLifted(lift ? openIndex : null)}

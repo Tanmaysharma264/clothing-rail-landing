@@ -7,9 +7,11 @@ import type { RailGarment } from "@/components/ui/product-rail-gallery";
 const P = "/products";
 
 const TEE_DETAILS = ["Oversized fit", "Dropped shoulder", "Front print"];
+// Hoodie `image` is the BACK (the main print); `backImage` is the chest/front.
+const HOODIE_LABELS = { front: "Back", back: "Front" };
 const HOODIE_DETAILS = ["Oversized fit", "Kangaroo pocket", "Back print", "Sleeve print"];
 
-export const PLACEHOLDER_ITEMS: RailGarment[] = [
+const PIECES: RailGarment[] = [
   {
     id: "tee-shattered-disc",
     name: "Shattered Disc Tee · Black",
@@ -88,10 +90,11 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     kind: "hoodie",
     color: "#101214",
     tag: "$88",
-    description: "Oversized black hoodie with a small pink logo on the chest and a large falling-figure graphic on the back.",
+    description: "Oversized black hoodie with a large falling-figure graphic on the back and a small pink logo on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
-    image: `${P}/hoodie-front-logo.webp`,
-    backImage: `${P}/hoodie-1-back.webp`,
+    labels: HOODIE_LABELS,
+    image: `${P}/hoodie-1-back.webp`,
+    backImage: `${P}/hoodie-front-logo.webp`,
     sideImage: `${P}/hoodie-side.webp`,
   },
   {
@@ -100,10 +103,11 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     kind: "hoodie",
     color: "#101214",
     tag: "$92",
-    description: "Oversized black hoodie with a Chillest in the Room mark on the chest and a large skeleton graphic on the back.",
+    description: "Oversized black hoodie with a large skeleton graphic on the back and a Chillest in the Room mark on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
-    image: `${P}/hoodie-front-chillest.webp`,
-    backImage: `${P}/hoodie-2-back.webp`,
+    labels: HOODIE_LABELS,
+    image: `${P}/hoodie-2-back.webp`,
+    backImage: `${P}/hoodie-front-chillest.webp`,
     sideImage: `${P}/hoodie-side.webp`,
   },
   {
@@ -112,10 +116,11 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     kind: "hoodie",
     color: "#101214",
     tag: "$92",
-    description: "Oversized black hoodie with a small pink logo on the chest and a shattered pink disc with a white wordmark on the back.",
+    description: "Oversized black hoodie with a shattered pink disc and white wordmark on the back and a small pink logo on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
-    image: `${P}/hoodie-front-logo.webp`,
-    backImage: `${P}/hoodie-3-back.webp`,
+    labels: HOODIE_LABELS,
+    image: `${P}/hoodie-3-back.webp`,
+    backImage: `${P}/hoodie-front-logo.webp`,
     sideImage: `${P}/hoodie-side.webp`,
   },
   {
@@ -124,10 +129,32 @@ export const PLACEHOLDER_ITEMS: RailGarment[] = [
     kind: "hoodie",
     color: "#101214",
     tag: "$88",
-    description: "Oversized black hoodie with a Chillest in the Room mark on the chest and a melting pink popsicle on the back.",
+    description: "Oversized black hoodie with a melting pink popsicle on the back and a Chillest in the Room mark on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
-    image: `${P}/hoodie-front-chillest.webp`,
-    backImage: `${P}/hoodie-4-back.webp`,
+    labels: HOODIE_LABELS,
+    image: `${P}/hoodie-4-back.webp`,
+    backImage: `${P}/hoodie-front-chillest.webp`,
     sideImage: `${P}/hoodie-side.webp`,
   },
 ];
+
+// Fixed mixed order on the rail (tees and hoodies interleaved, no two similar
+// designs side by side). Change this list to re-order the rail.
+const ORDER = [
+  "hoodie-skeleton",
+  "tee-popsicle-white",
+  "tee-shattered-disc",
+  "hoodie-popsicle",
+  "tee-skeleton",
+  "tee-chill-culture",
+  "hoodie-falling-figure",
+  "tee-popsicle-black",
+  "hoodie-shattered-disc",
+  "tee-falling-figure",
+];
+
+export const PLACEHOLDER_ITEMS: RailGarment[] = ORDER.map((id) => {
+  const piece = PIECES.find((item) => item.id === id);
+  if (!piece) throw new Error(`Unknown product id in ORDER: ${id}`);
+  return piece;
+});
