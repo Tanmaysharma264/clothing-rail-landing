@@ -29,7 +29,7 @@ export default function Home() {
           priority
           className="w-[clamp(64px,9vw,150px)] justify-self-start"
         />
-        <h1 className="self-center pt-2 text-center font-[family-name:var(--font-syne)] text-[clamp(0.95rem,3.2vw,2.8rem)] font-extrabold uppercase tracking-[0.03em] sm:pt-4">
+        <h1 className="self-center pt-1 text-center font-[family-name:var(--font-display)] text-[clamp(0.7rem,1.6vw,1.4rem)] uppercase tracking-[0.04em] sm:pt-2">
           STORE_CHILLCOM
         </h1>
         <Image
@@ -44,7 +44,7 @@ export default function Home() {
 
       <FlipCountdown to={DEADLINE} label="COPE BEFORE" className="mt-2 sm:mt-0" />
 
-      <div className="mt-6 flex w-full flex-1 items-center sm:mt-8 sm:items-start">
+      <div className="mt-2 flex w-full flex-1 items-center sm:-mt-4 sm:items-start">
         <ClothingRailHero
           items={PLACEHOLDER_ITEMS}
           hanger="none"

@@ -101,7 +101,7 @@ export function FlipCountdown({ to, label = "COPE BEFORE", endedLabel = "ORDERS 
 
   return (
     <div className={`flex flex-col items-center gap-[0.9em] ${className}`}>
-      <p className="font-[family-name:var(--font-syne)] text-[clamp(1rem,2.2vw,1.6rem)] font-extrabold uppercase tracking-[0.04em]">
+      <p className="font-[family-name:var(--font-display)] text-[clamp(0.7rem,1.1vw,0.95rem)] uppercase tracking-[0.06em]">
         {t?.done ? endedLabel : label}
       </p>
       {/* the clock scales with this font size */}
