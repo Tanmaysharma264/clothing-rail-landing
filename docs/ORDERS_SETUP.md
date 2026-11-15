@@ -55,7 +55,7 @@ Then **Deployments → ⋯ on the latest → Redeploy**. Never paste the secret 
 If you set the sheet up before the **Item** column existed:
 1. Open Apps Script, select everything, and paste the latest `google-apps-script/Code.gs`. Save.
 2. Pick **`setup`** and click **Run**. It adds the **Item** column and keeps your existing orders. (Older rows stay without a picture.)
-3. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.**
+3. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.** This step is easy to miss: until you do it, the live web app keeps running the OLD script and writes orders one column too far left. `setup` repairs such rows automatically the next time you run it.
 
 ## If you change the script later
 Saving is not enough. Use **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. The URL stays the same.

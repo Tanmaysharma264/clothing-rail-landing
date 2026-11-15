@@ -34,6 +34,7 @@ function setup() {
   // Status column: a dropdown (pending / paid / shipped / cancelled)
   var rule = SpreadsheetApp.newDataValidation().requireValueInList(STATUSES, true).setAllowInvalid(false).build();
   sheet.getRange('C2:C').setDataValidation(rule);
+  sheet.getRange('D2:D').clearDataValidations(); // an inserted column copies the Status dropdown from column C: remove it
 
   // Keep names, mobiles and UTRs as plain text so nothing is ever treated as a formula or a number
   ['H2:H', 'I2:I', 'K2:K'].forEach(function (a1) { sheet.getRange(a1).setNumberFormat('@'); });
@@ -51,6 +52,9 @@ function setup() {
   sheet.setColumnWidth(1, 80); sheet.setColumnWidth(2, 150); sheet.setColumnWidth(4, 100); sheet.setColumnWidth(5, 230);
   sheet.setColumnWidth(8, 160); sheet.setColumnWidth(9, 110);
 
+  // Fix any orders that an out-of-date web app deployment wrote one column too far left
+  var repaired = repairShiftedRows_(sheet);
+
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty('SECRET')) {
     props.setProperty('SECRET', Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''));
@@ -58,8 +62,43 @@ function setup() {
   if (!props.getProperty('ORDER_NO')) props.setProperty('ORDER_NO', '0');
   getFolder_();
 
-  Logger.log('Setup done.');
+  Logger.log('Setup done. Orders repaired: ' + repaired);
   Logger.log('SECRET (copy this into Vercel as SHEETS_SECRET): ' + props.getProperty('SECRET'));
+}
+
+/**
+ * An older deployment of this script (before the Item column) writes orders into columns D..K instead of E..L.
+ * Such a row has text in D (the product), no picture formula, an empty L, and the screenshot link in K.
+ * Move it to the right place. Rows that are already correct are never touched.
+ */
+function repairShiftedRows_(sheet) {
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var range = sheet.getRange(2, 1, last - 1, HEADERS.length);
+  var values = range.getValues();
+  var formulas = range.getFormulas();
+  var fixed = 0;
+  for (var i = 0; i < values.length; i++) {
+    var v = values[i], f = formulas[i], r = i + 2;
+    var shifted = !/^=IMAGE/i.test(f[3]) && v[3] !== '' && v[11] === '' && /^=HYPERLINK/i.test(f[10]);
+    if (!shifted) continue;
+    var screenshotFormula = f[10];
+    sheet.getRange(r, 4, 1, 9).setValues([[
+      '',                      // D  Item (picture not available for this order)
+      safe_(v[3]),             // E  Product
+      safe_(v[4]),             // F  Size
+      Number(v[5]) || 0,       // G  Amount
+      safe_(v[6]),             // H  Name
+      String(v[7]),            // I  Mobile
+      '',                      // J  WhatsApp (formula below)
+      safe_(v[9]),             // K  UTR
+      ''                       // L  Screenshot (formula below)
+    ]]);
+    sheet.getRange(r, COL.WHATSAPP).setFormula('=HYPERLINK("https://wa.me/91"&I' + r + ',"Chat")');
+    sheet.getRange(r, COL.SCREENSHOT).setFormula(screenshotFormula);
+    fixed++;
+  }
+  return fixed;
 }
 
 /** Health check: opening the web app URL in a browser shows this. */
