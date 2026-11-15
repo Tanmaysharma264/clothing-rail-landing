@@ -10,7 +10,8 @@ export function normalizeMobile(input: string): string | null {
 }
 
 export function cleanName(input: string): string | null {
-  const name = input.replace(/\s+/g, " ").trim();
+  // Names end up in a spreadsheet, so drop leading characters that a sheet would read as a formula.
+  const name = input.replace(/\s+/g, " ").replace(/^[=+\-@\s]+/, "").trim();
   return name.length >= 2 && name.length <= 60 ? name : null;
 }
 

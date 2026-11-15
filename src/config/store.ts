@@ -9,9 +9,6 @@ export const PRICES = { tee: 599, hoodie: 799 } as const;
 export const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 export type Size = (typeof SIZES)[number];
 
-/** Supabase Storage bucket that holds the payment screenshots. */
-export const PROOF_BUCKET = "payment-proofs";
-
 export function formatINR(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`;
 }

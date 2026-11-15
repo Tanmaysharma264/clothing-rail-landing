@@ -1,66 +1,67 @@
-# Setting up orders (about 10 minutes)
+# Setting up orders with Google Sheets (about 10 minutes)
 
-Until you do this, customers can pay (your UPI ID is already set) but **orders can't be saved**, so don't share the link yet.
-Nothing here costs money: Supabase and Vercel both have free plans that are enough for this.
+Every order becomes **a new row in your Google Sheet**, and the payment screenshot is saved in a **private Google Drive folder**.
+No database and nothing to pay for. Until you do this, customers can see the payment options but **orders can't be saved**, so don't share the link yet.
 
-## 1. Create the Supabase project
+## 1. Create the sheet
+1. Go to https://sheets.new and name the file **Chillcom Orders**.
 
-1. Go to https://supabase.com and sign up (GitHub login is fine).
-2. Click **New project**. Name it `chillcom-store`, choose a region close to your customers
-   (for India: **Mumbai (ap-south-1)**), set a database password and save it somewhere safe.
-3. Wait about a minute for it to finish setting up.
+## 2. Add the script
+1. In the sheet open **Extensions → Apps Script**.
+2. Delete everything in the editor.
+3. Open `google-apps-script/Code.gs` in this repo (GitHub → the file → **Raw**), copy **all** of it, and paste it into the editor.
+4. Click the **Save** icon.
 
-## 2. Create the orders table and screenshot storage
+## 3. Run the one-time setup
+1. In the toolbar, pick **`setup`** in the function dropdown and click **Run**.
+2. Google asks for permission:
+   **Review permissions → choose your Google account → "Google hasn't verified this app" → Advanced → "Go to … (unsafe)" → Allow.**
+   This warning is normal for your own scripts. It only touches this sheet and a Drive folder it creates.
+3. When it finishes, the **Execution log** at the bottom shows a line starting **`SECRET (copy this into Vercel as SHEETS_SECRET): …`**.
+   **Copy that long secret** and keep it private.
+4. Look at the sheet: there is now an **Orders** tab with headers, and a Drive folder called **Chillcom payment proofs**.
 
-1. In Supabase open **SQL Editor → New query**.
-2. Open the file `supabase/schema.sql` in this repo, copy everything, paste it in, click **Run**.
-3. You should see "Success". This creates:
-   - the `orders` table (with a `status` column that starts as `pending`), and
-   - a `payment-proofs` storage bucket for the screenshots.
+## 4. Publish the script as a web app
+1. **Deploy → New deployment**, click the gear icon and choose **Web app**.
+2. Set **Execute as: Me** and **Who has access: Anyone**. (Only your website knows the secret, so "Anyone" is safe.)
+3. Click **Deploy** and copy the **Web app URL** (it ends in `/exec`).
+4. Check it: open that URL in a browser. You should see `{"ok":true,"service":"chillcom-orders"}`.
 
-## 3. Get your two secret values
-
-In Supabase open **Project Settings → API** and copy:
-
-- **Project URL** (looks like `https://abcdefgh.supabase.co`)
-- **service_role** key (under "Project API keys"). **Keep this secret.** Never post it in a chat, a screenshot or GitHub.
-
-## 4. Add settings in Vercel
-
+## 5. Add two settings in Vercel
 Vercel → your project → **Settings → Environment Variables**. Add these two, for all environments:
 
 | Name | Value |
 | --- | --- |
-| `SUPABASE_URL` | the Project URL from step 3 |
-| `SUPABASE_SERVICE_ROLE_KEY` | the service_role key from step 3 |
+| `SHEETS_WEBHOOK_URL` | the Web app URL from step 4 |
+| `SHEETS_SECRET` | the secret from step 3 |
 
-Then **Deployments → ⋯ on the latest → Redeploy**.
+Then **Deployments → ⋯ on the latest → Redeploy**. Never paste the secret into a chat, a screenshot or GitHub.
 
-Your UPI ID (`tanmaysharma.04.12.04@okaxis`) is already built in, in `src/config/upi.ts`. To change it later, edit that file
-(or set `NEXT_PUBLIC_UPI_ID` / `NEXT_PUBLIC_UPI_NAME` in Vercel) and redeploy.
-
-## 5. Test it yourself
-
-1. Open your live site on your phone and pick any piece → **Shop** → size.
-2. Tap **Pay in your UPI app**. Check your own UPI ID and the amount (₹599 / ₹799) show up. You can cancel there.
-3. Fill the form with your own details and any screenshot, then **Place order**.
-4. In Supabase open **Table Editor → orders**. Your test order should be there with `status = pending`.
-   You can delete the test row.
+## 6. Test it yourself
+1. On your live site pick any piece, then **Shop**, a size, fill the form with your own details and any screenshot, and **Place order**.
+2. In the sheet, a new row should appear: **CC-0001**, status **pending**.
+3. Click **Open** in the Screenshot column. It opens the image (you must be signed in to the same Google account).
+4. Delete the test row. The next real order is **CC-0002**. To restart numbering at CC-0001, open Apps Script → **Project Settings → Script properties** and set `ORDER_NO` to `0`.
 
 ## Managing orders
+- **Status** is a dropdown: pending, paid, shipped, cancelled, and it is colour-coded. Check each payment in your UPI app, then set it to **paid**.
+- **Chat** in the WhatsApp column opens a WhatsApp chat with the buyer.
+- Use **Data → Create a filter** to show only pending orders.
+- Don't rename the **Orders** tab, delete the header row, or insert columns before the last one (the script writes by position). Add your own notes columns to the **right**.
+- Only share the sheet with people you trust: anyone with access sees buyers' mobile numbers.
 
-In Supabase → **Table Editor → orders**, newest orders are listed with:
+## If you change the script later
+Saving is not enough. Use **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**. The URL stays the same.
 
-- `order_no` (shown to the customer as `CC-0042`), product, size, amount
-- name, mobile, and a `whatsapp` link you can click to message the buyer
-- `utr` (if they entered it) and `proof_url` (click to open the payment screenshot)
-- `status`, a dropdown: **pending → paid → shipped → cancelled**
-
-Check the payment in your UPI app, then change `status` to `paid` by hand. Use the **Filter** button to see only `pending` orders.
+## If orders fail ("Could not save your order")
+Open Vercel → **Logs** and look for the message:
+- **"Apps Script did not return JSON"**: the deployment access is wrong. Redeploy with **Execute as: Me** and **Who has access: Anyone**.
+- **"Apps Script refused the order: unauthorized"**: `SHEETS_SECRET` in Vercel doesn't match the script's secret. Copy it again from the setup log (or Apps Script → Project Settings → Script properties → `SECRET`).
+- **"Ordering is not set up yet"**: one of the two Vercel settings is missing. Add it and redeploy.
 
 ## Good to know
-
-- **Prices** are set in `src/config/store.ts` (`PRICES`). The server always uses these, never what the browser sends.
+- **Prices** are in `src/config/store.ts` (`PRICES`). The server always uses these, never what the browser sends.
 - **Deadline:** orders close at the end of 20 Nov 2026 IST (`DEADLINE` in the same file). After that the Shop button is disabled and the server refuses orders.
-- **Screenshots** are stored in a public bucket under random, unguessable names so the link works in one click. Don't share the links.
-- Supabase pauses **free** projects after about a week with no activity. If the store ever sits unused, open the Supabase dashboard and click **Restore**.
+- **Your UPI ID** is in `src/config/upi.ts`, and the QR image is `public/payment/gpay-qr.png`.
+- **Spam protection:** one mobile number can place at most 3 orders in 10 minutes, and a hidden field catches simple bots.
+- **Google limits:** Apps Script and Drive have daily limits, far above what a few hundred orders need.

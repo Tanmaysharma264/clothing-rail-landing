@@ -1,10 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
-import { PROOF_BUCKET, SIZES, isClosed } from "@/config/store";
+import { SIZES, isClosed } from "@/config/store";
 import { getProduct } from "@/lib/products";
 import { cleanName, cleanUtr, normalizeMobile } from "@/lib/validate";
 
 const MAX_BYTES = 4 * 1024 * 1024; // Vercel allows ~4.5 MB request bodies
-const RATE_LIMIT = 3; // orders per mobile number per 10 minutes
 
 function fail(message: string, status: number) {
   return Response.json({ ok: false, error: message }, { status });
@@ -20,10 +18,12 @@ function sniffImage(bytes: Uint8Array): { ext: string; type: string } | null {
   return null;
 }
 
+type ScriptReply = { ok?: boolean; error?: string; orderCode?: string };
+
 export async function POST(request: Request) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return fail("Ordering is not set up yet. Please try again later.", 503);
+  const scriptUrl = process.env.SHEETS_WEBHOOK_URL;
+  const secret = process.env.SHEETS_SECRET;
+  if (!scriptUrl || !secret) return fail("Ordering is not set up yet. Please try again later.", 503);
 
   if (isClosed()) return fail("Orders are closed.", 403);
 
@@ -59,42 +59,39 @@ export async function POST(request: Request) {
   const image = sniffImage(bytes);
   if (!image) return fail("The screenshot must be a JPG, PNG or WebP image.", 415);
 
-  const db = createClient(url, key, { auth: { persistSession: false } });
-
-  // Slow down repeat submissions from the same number.
-  const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-  const recent = await db.from("orders").select("id", { count: "exact", head: true }).eq("mobile", mobile).gte("created_at", since);
-  if (!recent.error && (recent.count ?? 0) >= RATE_LIMIT) return fail("Too many orders from this number. Please wait a few minutes.", 429);
-
-  const path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${image.ext}`;
-  const upload = await db.storage.from(PROOF_BUCKET).upload(path, bytes, { contentType: image.type, upsert: false });
-  if (upload.error) {
-    console.error("proof upload failed", upload.error.message);
-    return fail("Could not save your screenshot. Please try again.", 500);
-  }
-  const proofUrl = db.storage.from(PROOF_BUCKET).getPublicUrl(path).data.publicUrl;
-
-  const insert = await db
-    .from("orders")
-    .insert({
-      status: "pending",
-      product_id: product.id,
-      product_name: product.name,
-      size,
-      amount: product.price, // price comes from the server, never from the browser
-      customer_name: name,
-      mobile,
-      utr: utr || null,
-      proof_url: proofUrl,
-    })
-    .select("order_no")
-    .single();
-
-  if (insert.error || !insert.data) {
-    console.error("order insert failed", insert.error?.message);
-    await db.storage.from(PROOF_BUCKET).remove([path]); // don't leave an orphan screenshot behind
-    return fail("Could not save your order. Please try again.", 500);
+  // Hand the order to the Google Apps Script, which writes the sheet row and saves the screenshot to Drive.
+  let reply: ScriptReply | null = null;
+  try {
+    const res = await fetch(scriptUrl, {
+      method: "POST",
+      // text/plain keeps this a "simple" request; Apps Script reads the raw body
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        secret,
+        productId: product.id,
+        productName: product.name,
+        size,
+        amount: product.price, // price comes from the server, never from the browser
+        name,
+        mobile,
+        utr: utr || "",
+        proof: { base64: Buffer.from(bytes).toString("base64"), mimeType: image.type, ext: image.ext },
+      }),
+      redirect: "follow",
+      signal: AbortSignal.timeout(25_000),
+    });
+    const text = await res.text();
+    try {
+      reply = JSON.parse(text) as ScriptReply;
+    } catch {
+      console.error("Apps Script did not return JSON. Check the deployment: Execute as Me, access Anyone.", res.status, text.slice(0, 120));
+    }
+  } catch (error) {
+    console.error("Apps Script request failed", error instanceof Error ? error.message : error);
   }
 
-  return Response.json({ ok: true, orderCode: `CC-${String(insert.data.order_no).padStart(4, "0")}` });
+  if (reply?.ok && reply.orderCode) return Response.json({ ok: true, orderCode: reply.orderCode });
+  if (reply?.error === "rate") return fail("Too many orders from this number. Please wait a few minutes.", 429);
+  if (reply?.error) console.error("Apps Script refused the order:", reply.error);
+  return fail("Could not save your order. Please try again.", 502);
 }
