@@ -43,7 +43,7 @@ export default function Home() {
       </header>
 
       <h2 className="relative mt-3 flex flex-col items-center text-center sm:-mt-2">
-        <span className="font-[family-name:var(--font-display)] text-[clamp(0.6rem,0.9vw,0.8rem)] uppercase tracking-[0.32em] text-foreground/70">
+        <span className="font-[family-name:var(--font-serif)] text-[clamp(0.65rem,1vw,0.9rem)] font-semibold uppercase tracking-[0.3em] text-foreground/75">
           Your time to become the
         </span>
         <span className="relative mt-1 inline-block">
