@@ -1,6 +1,6 @@
 # Setting up orders (about 10 minutes)
 
-Until you do this, the store works but **Pay now shows "Payments aren't set up yet"** and orders can't be placed.
+Until you do this, customers can pay (your UPI ID is already set) but **orders can't be saved**, so don't share the link yet.
 Nothing here costs money: Supabase and Vercel both have free plans that are enough for this.
 
 ## 1. Create the Supabase project
@@ -27,16 +27,17 @@ In Supabase open **Project Settings → API** and copy:
 
 ## 4. Add settings in Vercel
 
-Vercel → your project → **Settings → Environment Variables**. Add these four, for all environments:
+Vercel → your project → **Settings → Environment Variables**. Add these two, for all environments:
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_UPI_ID` | your UPI ID, e.g. `yourname@okhdfcbank` |
-| `NEXT_PUBLIC_UPI_NAME` | the name shown to the payer, e.g. `Chillcom` |
 | `SUPABASE_URL` | the Project URL from step 3 |
 | `SUPABASE_SERVICE_ROLE_KEY` | the service_role key from step 3 |
 
-Then **Deployments → ⋯ on the latest → Redeploy**. (The UPI values are baked in at build time, so a redeploy is required after any change.)
+Then **Deployments → ⋯ on the latest → Redeploy**.
+
+Your UPI ID (`tanmaysharma.04.12.04@okaxis`) is already built in, in `src/config/upi.ts`. To change it later, edit that file
+(or set `NEXT_PUBLIC_UPI_ID` / `NEXT_PUBLIC_UPI_NAME` in Vercel) and redeploy.
 
 ## 5. Test it yourself
 

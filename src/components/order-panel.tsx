@@ -256,6 +256,24 @@ export function OrderPanel({ item }: { item: RailGarment }) {
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
+                <details className="group rounded-lg border border-border text-sm">
+                  <summary className="cursor-pointer list-none rounded-lg px-3 py-2.5 font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center justify-between gap-3">
+                      Link or QR not working?
+                      <svg aria-hidden="true" viewBox="0 0 16 16" className="size-3.5 shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6l5 5 5-5" /></svg>
+                    </span>
+                  </summary>
+                  <div className="flex flex-col items-center gap-3 border-t border-border p-3">
+                    <p className="text-center text-muted-foreground">
+                      Scan this GPay QR (or save it and scan it from your gallery), then <span className="font-medium text-foreground">enter {formatINR(amount)}</span> yourself.
+                    </p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/payment/gpay-qr.png" alt={`Chillcom payment QR for ${UPI_ID}`} width={176} height={176} className="size-44 rounded-lg bg-white" />
+                    <a href="/payment/gpay-qr.png" download="chillcom-payment-qr.png" className="rounded-full border border-border px-3 py-1 text-xs font-medium outline-none hover:border-foreground/60 focus-visible:ring-2 focus-visible:ring-ring">
+                      Save QR
+                    </a>
+                  </div>
+                </details>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   The amount is {formatINR(amount)}. If your app lets you edit it, please keep it the same. After paying, come back here and finish step 3. If the page reloads, open this piece again and your details will still be here.
                 </p>
