@@ -59,6 +59,10 @@ export async function POST(request: Request) {
   const image = sniffImage(bytes);
   if (!image) return fail("The screenshot must be a JPG, PNG or WebP image.", 415);
 
+  // Small picture of the ordered item for the sheet, served by this site (public/order-thumbs/<product-id>.jpg).
+  const origin = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : new URL(request.url).origin;
+  const imageUrl = `${origin}/order-thumbs/${product.id}.jpg`;
+
   // Hand the order to the Google Apps Script, which writes the sheet row and saves the screenshot to Drive.
   let reply: ScriptReply | null = null;
   try {
@@ -70,6 +74,7 @@ export async function POST(request: Request) {
         secret,
         productId: product.id,
         productName: product.name,
+        imageUrl,
         size,
         amount: product.price, // price comes from the server, never from the browser
         name,

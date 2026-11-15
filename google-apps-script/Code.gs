@@ -12,7 +12,9 @@
 var SHEET_NAME = 'Orders';
 var FOLDER_NAME = 'Chillcom payment proofs';
 var STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
-var HEADERS = ['Order', 'Time', 'Status', 'Product', 'Size', 'Amount (Rs)', 'Name', 'Mobile', 'WhatsApp', 'UTR', 'Screenshot'];
+var HEADERS = ['Order', 'Time', 'Status', 'Item', 'Product', 'Size', 'Amount (Rs)', 'Name', 'Mobile', 'WhatsApp', 'UTR', 'Screenshot'];
+var COL = { ITEM: 4, WHATSAPP: 10, SCREENSHOT: 12 };   // 1-based column numbers
+var ROW_HEIGHT_WITH_PICTURE = 110;
 var RATE_LIMIT = 3;                    // orders per mobile number...
 var RATE_WINDOW_MS = 10 * 60 * 1000;   // ...per 10 minutes
 
@@ -20,6 +22,11 @@ var RATE_WINDOW_MS = 10 * 60 * 1000;   // ...per 10 minutes
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+
+  // Upgrade from the first version (no "Item" picture column): make room for it. Existing orders are kept.
+  if (sheet.getLastColumn() >= 11 && sheet.getRange(1, 4).getValue() === 'Product') {
+    sheet.insertColumnAfter(3);
+  }
 
   sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
   sheet.setFrozenRows(1);
@@ -29,7 +36,7 @@ function setup() {
   sheet.getRange('C2:C').setDataValidation(rule);
 
   // Keep names, mobiles and UTRs as plain text so nothing is ever treated as a formula or a number
-  ['G2:G', 'H2:H', 'J2:J'].forEach(function (a1) { sheet.getRange(a1).setNumberFormat('@'); });
+  ['H2:H', 'I2:I', 'K2:K'].forEach(function (a1) { sheet.getRange(a1).setNumberFormat('@'); });
   sheet.getRange('B2:B').setNumberFormat('dd mmm yyyy, hh:mm');
 
   // Colour the status so unpaid orders stand out
@@ -41,8 +48,8 @@ function setup() {
   });
   sheet.setConditionalFormatRules(rules);
 
-  sheet.setColumnWidth(1, 80); sheet.setColumnWidth(2, 150); sheet.setColumnWidth(4, 230);
-  sheet.setColumnWidth(7, 160); sheet.setColumnWidth(8, 110);
+  sheet.setColumnWidth(1, 80); sheet.setColumnWidth(2, 150); sheet.setColumnWidth(4, 100); sheet.setColumnWidth(5, 230);
+  sheet.setColumnWidth(8, 160); sheet.setColumnWidth(9, 110);
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty('SECRET')) {
@@ -94,7 +101,7 @@ function saveOrder_(data) {
     var recent = sheet.getRange(from, 1, last - from + 1, HEADERS.length).getValues();
     var since = Date.now() - RATE_WINDOW_MS;
     var count = recent.filter(function (row) {
-      return String(row[7]) === mobile && row[1] instanceof Date && row[1].getTime() >= since;
+      return String(row[8]) === mobile && row[1] instanceof Date && row[1].getTime() >= since;
     }).length;
     if (count >= RATE_LIMIT) return { ok: false, error: 'rate' };
   }
@@ -111,6 +118,7 @@ function saveOrder_(data) {
       code,
       new Date(),
       'pending',
+      '',
       safe_(data.productName),
       safe_(data.size),
       Number(data.amount) || 0,
@@ -121,8 +129,15 @@ function saveOrder_(data) {
       ''
     ]);
     var row = sheet.getLastRow();
-    sheet.getRange(row, 9).setFormula('=HYPERLINK("https://wa.me/91"&H' + row + ',"Chat")');
-    sheet.getRange(row, 11).setFormula('=HYPERLINK("' + file.getUrl() + '","Open")');
+    sheet.getRange(row, COL.WHATSAPP).setFormula('=HYPERLINK("https://wa.me/91"&I' + row + ',"Chat")');
+    sheet.getRange(row, COL.SCREENSHOT).setFormula('=HYPERLINK("' + file.getUrl() + '","Open")');
+
+    // Picture of what was ordered (only from our own website's /order-thumbs/ folder; a missing picture never blocks the order)
+    var imageUrl = String(data.imageUrl || '');
+    if (/^https:\/\/[A-Za-z0-9.\-]+\/order-thumbs\/[a-z0-9\-]+\.jpg$/.test(imageUrl)) {
+      sheet.getRange(row, COL.ITEM).setFormula('=IMAGE("' + imageUrl + '")');
+      sheet.setRowHeight(row, ROW_HEIGHT_WITH_PICTURE);
+    }
   } catch (err) {
     file.setTrashed(true); // do not leave an orphan screenshot behind
     throw err;
