@@ -42,16 +42,19 @@ export default function Home() {
         />
       </header>
 
-      <FlipCountdown to={DEADLINE} label="COPE BEFORE" className="mt-2 sm:mt-0" />
+      {/* rail first, countdown underneath; centred in the free space on tall phones */}
+      <div className="flex w-full flex-1 flex-col items-center justify-center sm:justify-start">
+        <div className="mt-2 w-full sm:mt-0">
+          <ClothingRailHero
+            items={PLACEHOLDER_ITEMS}
+            hanger="none"
+            showCaption={false}
+            autoplay
+            className="bg-transparent! [&>[data-backdrop]]:hidden"
+          />
+        </div>
 
-      <div className="mt-2 flex w-full flex-1 items-center sm:-mt-4 sm:items-start">
-        <ClothingRailHero
-          items={PLACEHOLDER_ITEMS}
-          hanger="none"
-          showCaption={false}
-          autoplay
-          className="bg-transparent! [&>[data-backdrop]]:hidden"
-        />
+        <FlipCountdown to={DEADLINE} label="COPE BEFORE" className="mt-2 pb-8 sm:-mt-2" />
       </div>
     </main>
   );
