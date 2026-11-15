@@ -1,10 +1,7 @@
 import Image from "next/image";
-import ClothingRailHero from "@/components/ui/product-rail-gallery";
 import { FlipCountdown } from "@/components/flip-countdown";
-import { PLACEHOLDER_ITEMS } from "@/data/placeholder-items";
-
-// Orders close at the end of 20 November 2026 (India time, IST).
-const DEADLINE = "2026-11-20T23:59:59+05:30";
+import { StoreRail } from "@/components/store-rail";
+import { DEADLINE } from "@/config/store";
 
 export default function Home() {
   return (
@@ -59,13 +56,7 @@ export default function Home() {
       {/* rail first, countdown underneath; centred in the free space on tall phones */}
       <div className="flex w-full flex-1 flex-col items-center justify-center sm:justify-start">
         <div className="mt-6 w-full sm:-mt-1">
-          <ClothingRailHero
-            items={PLACEHOLDER_ITEMS}
-            hanger="none"
-            showCaption={false}
-            autoplay
-            className="bg-transparent! [&>[data-backdrop]]:hidden"
-          />
+          <StoreRail />
         </div>
 
         <FlipCountdown to={DEADLINE} label="COP BEFORE" className="mt-2 pb-8 sm:-mt-2" />

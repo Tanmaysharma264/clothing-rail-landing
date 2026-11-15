@@ -1,4 +1,5 @@
 import type { RailGarment } from "@/components/ui/product-rail-gallery";
+import { PRICES, formatINR } from "@/config/store";
 
 // Chillcom products shown on the rail. Names, prices and descriptions are
 // PLACEHOLDERS: edit them here. Photos live in /public/products and must be
@@ -11,13 +12,13 @@ const TEE_DETAILS = ["Oversized fit", "Dropped shoulder", "Front print"];
 const HOODIE_LABELS = { front: "Back", back: "Front" };
 const HOODIE_DETAILS = ["Oversized fit", "Kangaroo pocket", "Back print", "Sleeve print"];
 
+// Hang-tag prices are filled in below from PRICES in src/config/store.ts.
 const PIECES: RailGarment[] = [
   {
     id: "tee-shattered-disc",
     name: "Shattered Disc Tee · Black",
     kind: "tee",
     color: "#101214",
-    tag: "$48",
     description: "Oversized black tee with a shattered pink disc and the Chillcom wordmark on the front. Thorn print on the sleeve.",
     details: [...TEE_DETAILS, "Sleeve print"],
     image: `${P}/tee-1-front.webp`,
@@ -29,7 +30,6 @@ const PIECES: RailGarment[] = [
     name: "Falling Figure Tee · Black",
     kind: "tee",
     color: "#101214",
-    tag: "$48",
     description: "Oversized black tee with a falling figure in white and a pink Chillcom logotype on the front. Thorn print on the sleeve.",
     details: [...TEE_DETAILS, "Sleeve print"],
     image: `${P}/tee-2-front.webp`,
@@ -41,7 +41,6 @@ const PIECES: RailGarment[] = [
     name: "Popsicle Tee · Black",
     kind: "tee",
     color: "#101214",
-    tag: "$52",
     description: "Oversized black tee with a melting pink popsicle and bold pink lettering on the front. Thorn print on the sleeve.",
     details: [...TEE_DETAILS, "Sleeve print"],
     image: `${P}/tee-3-front.webp`,
@@ -53,7 +52,6 @@ const PIECES: RailGarment[] = [
     name: "Skeleton Tee · Black",
     kind: "tee",
     color: "#101214",
-    tag: "$52",
     description: "Oversized black tee with a white skeleton and pink Chillcom lettering on the front. Thorn print on the sleeve.",
     details: [...TEE_DETAILS, "Sleeve print"],
     image: `${P}/tee-4-front.webp`,
@@ -65,7 +63,6 @@ const PIECES: RailGarment[] = [
     name: "Popsicle Tee · White",
     kind: "tee",
     color: "#E9EAEC",
-    tag: "$52",
     description: "Oversized white tee with a melting pink popsicle and bold pink lettering on the front.",
     details: TEE_DETAILS,
     image: `${P}/tee-5-front.webp`,
@@ -77,7 +74,6 @@ const PIECES: RailGarment[] = [
     name: "Chill Culture Tee · White",
     kind: "tee",
     color: "#E9EAEC",
-    tag: "$56",
     description: "Oversized white tee with a big pink Chill Com wordmark and a black-and-white group illustration on the front.",
     details: TEE_DETAILS,
     image: `${P}/tee-6-front.webp`,
@@ -89,7 +85,6 @@ const PIECES: RailGarment[] = [
     name: "Falling Figure Hoodie · Black",
     kind: "hoodie",
     color: "#101214",
-    tag: "$88",
     description: "Oversized black hoodie with a large falling-figure graphic on the back and a small pink logo on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
     labels: HOODIE_LABELS,
@@ -102,7 +97,6 @@ const PIECES: RailGarment[] = [
     name: "Skeleton Hoodie · Black",
     kind: "hoodie",
     color: "#101214",
-    tag: "$92",
     description: "Oversized black hoodie with a large skeleton graphic on the back and a Chillest in the Room mark on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
     labels: HOODIE_LABELS,
@@ -115,7 +109,6 @@ const PIECES: RailGarment[] = [
     name: "Shattered Disc Hoodie · Black",
     kind: "hoodie",
     color: "#101214",
-    tag: "$92",
     description: "Oversized black hoodie with a shattered pink disc and white wordmark on the back and a small pink logo on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
     labels: HOODIE_LABELS,
@@ -128,7 +121,6 @@ const PIECES: RailGarment[] = [
     name: "Popsicle Hoodie · Black",
     kind: "hoodie",
     color: "#101214",
-    tag: "$88",
     description: "Oversized black hoodie with a melting pink popsicle on the back and a Chillest in the Room mark on the chest. Thorn print on the sleeve.",
     details: HOODIE_DETAILS,
     labels: HOODIE_LABELS,
@@ -156,5 +148,5 @@ const ORDER = [
 export const PLACEHOLDER_ITEMS: RailGarment[] = ORDER.map((id) => {
   const piece = PIECES.find((item) => item.id === id);
   if (!piece) throw new Error(`Unknown product id in ORDER: ${id}`);
-  return piece;
+  return { ...piece, tag: formatINR(PRICES[piece.kind === "hoodie" ? "hoodie" : "tee"]) };
 });

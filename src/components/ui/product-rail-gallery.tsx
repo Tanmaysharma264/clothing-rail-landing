@@ -54,6 +54,8 @@ export interface ClothingRailHeroProps extends React.ComponentProps<"section"> {
   labels?: ClothingRailHeroLabels;
   /** Set to false to hide the caption block under the rail. It stays available to screen readers. */
   showCaption?: boolean;
+  /** Extra content rendered at the bottom of the detail view, e.g. a "Shop" button and order form. */
+  renderDetail?: (item: RailGarment, controls: { close: () => void }) => React.ReactNode;
   onOpenChange?: (index: number | null) => void;
 }
 
@@ -537,6 +539,7 @@ export function ClothingRailHero({
   hanger = "wood",
   labels = DEFAULT_LABELS,
   showCaption = true,
+  renderDetail,
   onOpenChange,
   className,
   ...rest
@@ -1052,6 +1055,7 @@ export function ClothingRailHero({
           total={count}
           hanger={hanger}
           labels={{ ...labels, ...items[openIndex].labels }}
+          renderDetail={renderDetail}
           reduced={reduced}
           source={() => turns.current[openIndex]?.getBoundingClientRect() ?? null}
           onLift={(lift) => setLifted(lift ? openIndex : null)}
@@ -1062,13 +1066,14 @@ export function ClothingRailHero({
   );
 }
 
-function Detail({ uid, item, index, total, hanger, labels, reduced, source, onLift, onClose }: {
+function Detail({ uid, item, index, total, hanger, labels, renderDetail, reduced, source, onLift, onClose }: {
   uid: string;
   item: RailGarment;
   index: number;
   total: number;
   hanger: "wood" | "matte" | "none";
   labels: ClothingRailHeroLabels;
+  renderDetail?: (item: RailGarment, controls: { close: () => void }) => React.ReactNode;
   reduced: boolean;
   source: () => DOMRect | null;
   onLift: (lifted: boolean) => void;
@@ -1170,9 +1175,10 @@ function Detail({ uid, item, index, total, hanger, labels, reduced, source, onLi
 
   const onKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Escape") { event.preventDefault(); dismiss(); return; }
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") { turnTo(side === "front" ? "back" : "front"); return; }
+    const typing = (event.target as HTMLElement).closest?.("input, textarea, select");
+    if (!typing && (event.key === "ArrowLeft" || event.key === "ArrowRight")) { turnTo(side === "front" ? "back" : "front"); return; }
     if (event.key !== "Tab") return;
-    const controls = [...(dialogRef.current?.querySelectorAll("button") ?? [])].filter((node) => !node.disabled);
+    const controls = [...(dialogRef.current?.querySelectorAll<HTMLElement>("button, input, select, textarea, a[href], [tabindex]:not([tabindex='-1'])") ?? [])].filter((node) => !(node as HTMLButtonElement).disabled && node.tabIndex >= 0 && node.offsetParent !== null);
     const first = controls[0];
     const last = controls.at(-1);
     if (!first || !last) return;
@@ -1206,13 +1212,13 @@ function Detail({ uid, item, index, total, hanger, labels, reduced, source, onLi
   );
 
   return createPortal(
-    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-6 text-foreground" onKeyDown={onKeyDown}>
-      <div aria-hidden="true" className={`absolute inset-0 bg-background/90 backdrop-blur-xl transition-opacity duration-300 motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`} onClick={dismiss} />
-      <button ref={closeRef} type="button" onClick={dismiss} className={`absolute right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium tracking-wide text-muted-foreground outline-none transition-[opacity,color] duration-300 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`}>
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="fixed inset-0 z-50 flex overflow-y-auto p-6 text-foreground" onKeyDown={onKeyDown}>
+      <div aria-hidden="true" className={`fixed inset-0 bg-background/90 backdrop-blur-xl transition-opacity duration-300 motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`} onClick={dismiss} />
+      <button ref={closeRef} type="button" onClick={dismiss} className={`fixed right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 backdrop-blur-sm text-xs font-medium tracking-wide text-muted-foreground outline-none transition-[opacity,color] duration-300 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`}>
         {labels.close}
         <svg aria-hidden="true" viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M3 3l10 10M13 3L3 13" /></svg>
       </button>
-      <div className="relative grid w-full max-w-5xl items-center gap-10 pt-10 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      <div className="relative m-auto grid w-full max-w-5xl items-center gap-10 pt-10 md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
         {stage}
         <div className={`flex flex-col gap-4 text-center transition-[opacity,transform] delay-150 duration-500 motion-reduce:transition-none md:text-left ${shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
           <p className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</p>
@@ -1231,6 +1237,7 @@ function Detail({ uid, item, index, total, hanger, labels, reduced, source, onLi
               </button>
             ))}
           </div>
+          {renderDetail?.(item, { close: dismiss })}
         </div>
       </div>
     </div>,
