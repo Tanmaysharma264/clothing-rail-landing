@@ -15,6 +15,25 @@ var STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
 var HEADERS = ['Order', 'Time', 'Status', 'Item', 'Product', 'Size', 'Amount (Rs)', 'Name', 'Mobile', 'WhatsApp', 'UTR', 'Screenshot'];
 var COL = { ITEM: 4, WHATSAPP: 10, SCREENSHOT: 12 };   // 1-based column numbers
 var ROW_HEIGHT_WITH_PICTURE = 110;
+
+// Where the small product pictures live: the order-thumbs folder in your GitHub repo.
+// The Item column shows PICTURE_BASE + '/' + <product-id> + '.jpg'. GitHub addresses keep working even if
+// you rename your Vercel domain. (If you move or rename the repo, change this line and run setup again.)
+var PICTURE_BASE = 'https://raw.githubusercontent.com/Tanmaysharma264/clothing-rail-landing/main/public/order-thumbs';
+
+// Product name -> product id, used by setup() to add pictures to orders that were saved without one.
+var PRODUCT_IDS = {
+  'Shattered Disc Tee · Black': 'tee-shattered-disc',
+  'Falling Figure Tee · Black': 'tee-falling-figure',
+  'Popsicle Tee · Black': 'tee-popsicle-black',
+  'Skeleton Tee · Black': 'tee-skeleton',
+  'Popsicle Tee · White': 'tee-popsicle-white',
+  'Chill Culture Tee · White': 'tee-chill-culture',
+  'Falling Figure Hoodie · Black': 'hoodie-falling-figure',
+  'Skeleton Hoodie · Black': 'hoodie-skeleton',
+  'Shattered Disc Hoodie · Black': 'hoodie-shattered-disc',
+  'Popsicle Hoodie · Black': 'hoodie-popsicle'
+};
 var RATE_LIMIT = 3;                    // orders per mobile number...
 var RATE_WINDOW_MS = 10 * 60 * 1000;   // ...per 10 minutes
 
@@ -54,6 +73,7 @@ function setup() {
 
   // Fix any orders that an out-of-date web app deployment wrote one column too far left
   var repaired = repairShiftedRows_(sheet);
+  var pictures = addMissingPictures_(sheet);
 
   var props = PropertiesService.getScriptProperties();
   if (!props.getProperty('SECRET')) {
@@ -62,7 +82,7 @@ function setup() {
   if (!props.getProperty('ORDER_NO')) props.setProperty('ORDER_NO', '0');
   getFolder_();
 
-  Logger.log('Setup done. Orders repaired: ' + repaired);
+  Logger.log('Setup done. Orders repaired: ' + repaired + '. Pictures added: ' + pictures);
   Logger.log('SECRET (copy this into Vercel as SHEETS_SECRET): ' + props.getProperty('SECRET'));
 }
 
@@ -99,6 +119,37 @@ function repairShiftedRows_(sheet) {
     fixed++;
   }
   return fixed;
+}
+
+/** The picture address for a product id, or '' when it cannot be built safely. */
+function pictureUrl_(productId, websiteUrl) {
+  var id = String(productId || '');
+  var base = String(PICTURE_BASE || '').replace(/\/+$/, '');
+  if (base && /^https:\/\/[A-Za-z0-9.\-_\/]+$/.test(base) && /^[a-z0-9\-]+$/.test(id)) {
+    return base + '/' + id + '.jpg';
+  }
+  // No PICTURE_BASE set: accept the address the website sent, but only from an https /order-thumbs/ path
+  var url = String(websiteUrl || '');
+  return /^https:\/\/[A-Za-z0-9.\-]+\/order-thumbs\/[a-z0-9\-]+\.jpg$/.test(url) ? url : '';
+}
+
+/** Adds the Item picture to rows that have none, by looking up the product name. Existing pictures are kept. */
+function addMissingPictures_(sheet) {
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var range = sheet.getRange(2, 1, last - 1, HEADERS.length);
+  var values = range.getValues();
+  var formulas = range.getFormulas();
+  var added = 0;
+  for (var i = 0; i < values.length; i++) {
+    if (formulas[i][COL.ITEM - 1] !== '' || values[i][COL.ITEM - 1] !== '') continue;
+    var url = pictureUrl_(PRODUCT_IDS[String(values[i][4])], '');
+    if (!url) continue;
+    sheet.getRange(i + 2, COL.ITEM).setFormula('=IMAGE("' + url + '")');
+    sheet.setRowHeight(i + 2, ROW_HEIGHT_WITH_PICTURE);
+    added++;
+  }
+  return added;
 }
 
 /** Health check: opening the web app URL in a browser shows this. */
@@ -164,16 +215,17 @@ function saveOrder_(data) {
       safe_(data.name),
       mobile,
       '',
-      safe_(data.utr),
+      /^\d+$/.test(String(data.utr || '')) ? "'" + data.utr : safe_(data.utr),   // digits-only IDs stay text (no 4.1E+11)
       ''
     ]);
     var row = sheet.getLastRow();
+    sheet.getRange(row, 2).setNumberFormat('dd mmm yyyy, hh:mm');
     sheet.getRange(row, COL.WHATSAPP).setFormula('=HYPERLINK("https://wa.me/91"&I' + row + ',"Chat")');
     sheet.getRange(row, COL.SCREENSHOT).setFormula('=HYPERLINK("' + file.getUrl() + '","Open")');
 
     // Picture of what was ordered (only from our own website's /order-thumbs/ folder; a missing picture never blocks the order)
-    var imageUrl = String(data.imageUrl || '');
-    if (/^https:\/\/[A-Za-z0-9.\-]+\/order-thumbs\/[a-z0-9\-]+\.jpg$/.test(imageUrl)) {
+    var imageUrl = pictureUrl_(data.productId, data.imageUrl);
+    if (imageUrl) {
       sheet.getRange(row, COL.ITEM).setFormula('=IMAGE("' + imageUrl + '")');
       sheet.setRowHeight(row, ROW_HEIGHT_WITH_PICTURE);
     }

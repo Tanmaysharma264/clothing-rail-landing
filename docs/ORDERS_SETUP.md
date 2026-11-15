@@ -67,7 +67,7 @@ Open Vercel → **Logs** and look for the message:
 - **"Ordering is not set up yet"**: one of the two Vercel settings is missing. Add it and redeploy.
 
 ## Good to know
-- **Item pictures** come from `public/order-thumbs/<product-id>.jpg` on your site. After adding or changing a product, run `python3 scripts/make-order-thumbs.py` (needs `pip install pillow`) and push. If you later change your site's address, older rows keep the old address in their picture formula, so keep the old domain redirecting to the new one.
+- **Item pictures** are the small JPGs in `public/order-thumbs/<product-id>.jpg`, shown from your GitHub repo (`PICTURE_BASE` at the top of `Code.gs`), so they keep working even if you rename your Vercel domain. New orders get their picture automatically from the product id. `setup` also fills in pictures for older orders using the product names (`PRODUCT_IDS` in `Code.gs`). After adding or changing a product, run `python3 scripts/make-order-thumbs.py` (needs `pip install pillow`), push, and add the product's name to `PRODUCT_IDS` if you want old rows to get a picture too.
 - **Prices** are in `src/config/store.ts` (`PRICES`). The server always uses these, never what the browser sends.
 - **Deadline:** orders close at the end of 20 Nov 2026 IST (`DEADLINE` in the same file). After that the Shop button is disabled and the server refuses orders.
 - **Your UPI ID** is in `src/config/upi.ts`, and the QR image is `public/payment/gpay-qr.png`.
