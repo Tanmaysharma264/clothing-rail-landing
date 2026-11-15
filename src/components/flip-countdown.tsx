@@ -80,7 +80,7 @@ function Colon() {
   );
 }
 
-export function FlipCountdown({ to, label = "COPE BEFORE", endedLabel = "ORDERS CLOSED", className = "" }: Props) {
+export function FlipCountdown({ to, label = "COP BEFORE", endedLabel = "ORDERS CLOSED", className = "" }: Props) {
   const target = React.useMemo(() => new Date(to).getTime(), [to]);
   const [now, setNow] = React.useState(null as number | null);
 

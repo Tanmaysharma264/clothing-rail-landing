@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Archivo_Black, Geist_Mono, Oswald } from "next/font/google";
+import { Geist, Archivo_Black, Geist_Mono, Oswald, Pinyon_Script } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -9,6 +9,12 @@ const geistSans = Geist({
 
 const display = Archivo_Black({
   variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const script = Pinyon_Script({
+  variable: "--font-script",
   subsets: ["latin"],
   weight: "400",
 });
@@ -33,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${oswald.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${oswald.variable} ${script.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -42,9 +42,23 @@ export default function Home() {
         />
       </header>
 
+      <h2 className="relative mt-3 flex flex-col items-center text-center sm:-mt-2">
+        <span className="font-[family-name:var(--font-display)] text-[clamp(0.6rem,0.9vw,0.8rem)] uppercase tracking-[0.32em] text-foreground/70">
+          Your time to become the
+        </span>
+        <span className="relative mt-1 inline-block">
+          <span className="font-[family-name:var(--font-display)] text-[clamp(2.2rem,4.4vw,3.6rem)] uppercase leading-[0.9] tracking-[0.01em]">
+            Chillest
+          </span>
+          <span className="pointer-events-none absolute -bottom-[0.35em] right-[-0.3em] -rotate-6 whitespace-nowrap font-[family-name:var(--font-script)] text-[clamp(1.5rem,3.2vw,2.6rem)] leading-none text-[#ff0a8f] [text-shadow:0_0_0.5em_rgb(255_255_255/0.9)]">
+            in the room
+          </span>
+        </span>
+      </h2>
+
       {/* rail first, countdown underneath; centred in the free space on tall phones */}
       <div className="flex w-full flex-1 flex-col items-center justify-center sm:justify-start">
-        <div className="mt-2 w-full sm:mt-0">
+        <div className="mt-6 w-full sm:-mt-1">
           <ClothingRailHero
             items={PLACEHOLDER_ITEMS}
             hanger="none"
@@ -54,7 +68,7 @@ export default function Home() {
           />
         </div>
 
-        <FlipCountdown to={DEADLINE} label="COPE BEFORE" className="mt-2 pb-8 sm:-mt-2" />
+        <FlipCountdown to={DEADLINE} label="COP BEFORE" className="mt-2 pb-8 sm:-mt-2" />
       </div>
     </main>
   );
