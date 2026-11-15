@@ -18,7 +18,7 @@ function sniffImage(bytes: Uint8Array): { ext: string; type: string } | null {
   return null;
 }
 
-type ScriptReply = { ok?: boolean; error?: string; orderCode?: string };
+type ScriptReply = { ok?: boolean; error?: string; detail?: string; orderCode?: string };
 
 export async function POST(request: Request) {
   const scriptUrl = process.env.SHEETS_WEBHOOK_URL;
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     try {
       reply = JSON.parse(text) as ScriptReply;
     } catch {
-      console.error("Apps Script did not return JSON. Check the deployment: Execute as Me, access Anyone.", res.status, text.slice(0, 120));
+      console.error("Apps Script did not return JSON. Check the deployment: Execute as Me, access Anyone, and the URL ends in /exec.", "HTTP", res.status, "from", res.url.split("?")[0], text.slice(0, 120).replace(/\s+/g, " "));
     }
   } catch (error) {
     console.error("Apps Script request failed", error instanceof Error ? error.message : error);
@@ -92,6 +92,6 @@ export async function POST(request: Request) {
 
   if (reply?.ok && reply.orderCode) return Response.json({ ok: true, orderCode: reply.orderCode });
   if (reply?.error === "rate") return fail("Too many orders from this number. Please wait a few minutes.", 429);
-  if (reply?.error) console.error("Apps Script refused the order:", reply.error);
+  if (reply?.error) console.error("Apps Script refused the order:", reply.error, reply.detail ?? "");
   return fail("Could not save your order. Please try again.", 502);
 }
