@@ -1,6 +1,6 @@
 /**
  * Builds a UPI payment link. On a phone it opens the UPI app chooser with the payee
- * and amount already filled in. The same string is used for the QR code.
+ * and amount already filled in.
  */
 export function upiLink({ id, name, amount, note }: { id: string; name: string; amount: number; note: string }) {
   const parts = [

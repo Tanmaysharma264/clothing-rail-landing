@@ -1,4 +1,4 @@
-// The UPI ID that customers pay. It is public (it appears on the page and in the QR code).
+// The UPI ID that customers pay. It is public (it appears on the page).
 // Verified against the shop's GPay QR code. To change it later, edit the default below,
 // or set NEXT_PUBLIC_UPI_ID / NEXT_PUBLIC_UPI_NAME in Vercel (they take priority).
 // These values are baked in at build time, so redeploy after changing them.
